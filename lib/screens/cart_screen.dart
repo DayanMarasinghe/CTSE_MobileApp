@@ -95,7 +95,80 @@ class _CartScreenState extends State<CartScreen> {
       _productName.text = documentSnapshot['productname'];
     }
 
-    //TODO manual input for the user
+    //manual input for the user
+    await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext ctx) {
+          return Padding(
+            padding: EdgeInsets.only(
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  //letting user only update the quantity
+                  controller: _productIdController,
+                  decoration: const InputDecoration(labelText: 'Product ID'),
+                ),
+                TextField(
+                  controller: _customerIdController,
+                  decoration: const InputDecoration(labelText: 'Customer ID'),
+                ),
+                TextField(
+                  controller: _productName,
+                  decoration: const InputDecoration(labelText: 'Product name'),
+                ),
+                TextField(
+                  controller: _priceController,
+                  decoration: const InputDecoration(labelText: 'Price'),
+                ),
+                TextField(
+                  controller: _quantityController,
+                  decoration: const InputDecoration(labelText: 'Quantity'),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                  child: Text('Update'),
+                  onPressed: () async {
+                    final String? productID = _productIdController.text;
+                    final String? customerID = _customerIdController.text;
+                    final String? productName = _productName.text;
+                    final String? price = _priceController.text;
+                    final String? quantity = _quantityController.text;
+                    //validation for the quantity input
+                    if (quantity != null) {
+                      //insert to collection
+                      await _cartData.add({
+                        "productid": productID,
+                        "customerid": customerID,
+                        "quantity": quantity,
+                        "price": price,
+                        "productname": productName
+                      });
+
+                      //clear input fields
+                      _productIdController.text = '';
+                      _customerIdController.text = '';
+                      _productName.text = '';
+                      _priceController.text = '';
+                      _quantityController.text = '';
+
+                      //hide the bottom prompt view
+                      Navigator.of(context).pop();
+                    }
+                  },
+                )
+              ],
+            ),
+          );
+        });
   }
 
   //Method to update cart item details
