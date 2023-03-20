@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
 
         // Replace the 8 lines Navigator.push by a simple Get.to(). You don't need context
         body: Center(
-            child: Row(
+            child: Column(
           children: [
             ElevatedButton(
                 child: const Text("Go to Products"),
