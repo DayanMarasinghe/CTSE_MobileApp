@@ -5,6 +5,7 @@ import 'package:market/screens/products_screen.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:market/screens/cus_reg.dart';
 
 // void main() => runApp(MyApp());
 
@@ -13,20 +14,23 @@ void main() async {
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-
     return GetMaterialApp(
       home: HomeScreen(),
       theme: ThemeData(
-        primaryColor: Colors.blue, colorScheme: ColorScheme.fromSwatch().copyWith(secondary: Colors.purpleAccent),
+        primaryColor: Colors.blue,
+        colorScheme:
+            ColorScheme.fromSwatch().copyWith(secondary: Colors.purpleAccent),
       ),
       getPages: [
         GetPage(name: '/', page: () => HomeScreen()),
         GetPage(name: '/products', page: () => ProductsScreen()),
+        GetPage(name: '/cusreg', page: () => CusReg())
       ],
     );
   }
