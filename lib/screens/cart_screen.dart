@@ -80,7 +80,7 @@ class _CartScreenState extends State<CartScreen> {
 
     //delete snackbar
     ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You removed a item from the cart")));
+        const SnackBar(content: Text("You removed an item from the cart")));
   }
 
   //Method to create  item details
@@ -110,6 +110,49 @@ class _CartScreenState extends State<CartScreen> {
       _productName.text = documentSnapshot['productname'];
     }
 
-    //TODO bottom input to update the cart items
+    //bottom input to update the cart items
+    await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext ctx) {
+          return Padding(
+            padding: EdgeInsets.only(
+                top: 20,
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  //letting user only update the quantity
+                  controller: _quantityController,
+                  decoration: const InputDecoration(labelText: 'Quantity'),
+                ),
+                const SizedBox(
+                  height: 20,
+                ),
+                ElevatedButton(
+                  child: Text('Update'),
+                  onPressed: () async {
+                    final String? quantity = _quantityController.text;
+                    //validation for the quantity input
+                    if (quantity != null) {
+                      await _cartData
+                          .doc(documentSnapshot!.id)
+                          .update({"quantity": quantity});
+                      //clear input field
+                      _quantityController.text = '';
+
+                      //hide the bottom prompt view
+                      Navigator.of(context).pop();
+                    }
+                  },
+                )
+              ],
+            ),
+          );
+        });
   }
 }
