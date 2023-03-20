@@ -24,11 +24,51 @@ class _CartScreenState extends State<CartScreen> {
       appBar: AppBar(
         title: const Text('My Cart'),
       ),
-      //TODO - Body should be added here
+      //using the streambuilder to view all product for the particular customer
+      body: StreamBuilder(
+        stream: _cartData.snapshots(),
+        builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+          if (streamSnapshot.hasData) {
+            return ListView.builder(
+              itemCount: streamSnapshot.data!.docs.length,
+              itemBuilder: (context, index) {
+                final DocumentSnapshot documentSnapshot =
+                    streamSnapshot.data!.docs[index];
+                return Card(
+                  margin: const EdgeInsets.all(10),
+                  child: ListTile(
+                    title: Text(documentSnapshot['productname']),
+                    // ignore: prefer_interpolation_to_compose_strings
+                    subtitle: Text(
+                        'Price : ${documentSnapshot['price']} , Quantity : ${documentSnapshot['quantity']}'),
+                    trailing: SizedBox(
+                      width: 100,
+                      child: Row(
+                        children: [
+                          IconButton(
+                              onPressed: () => _updateItem(documentSnapshot),
+                              icon: const Icon(Icons.edit)),
+                          IconButton(
+                              onPressed: () =>
+                                  _deleteItemFromCart(documentSnapshot.id),
+                              icon: const Icon(Icons.delete))
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            );
+          }
+          return const Center(
+            child: CircularProgressIndicator(),
+          );
+        },
+      ),
 
       //add new item into the cart - manual process
       floatingActionButton: FloatingActionButton(
-        onPressed: () => _createOrUpdateCartItem(),
+        onPressed: () => _createItem(),
         child: const Icon(Icons.add),
       ),
     );
@@ -43,9 +83,8 @@ class _CartScreenState extends State<CartScreen> {
         const SnackBar(content: Text("You removed a item from the cart")));
   }
 
-  //Method to create or update the cart item details
-  Future<void> _createOrUpdateCartItem(
-      [DocumentSnapshot? documentSnapshot]) async {
+  //Method to create  item details
+  Future<void> _createItem([DocumentSnapshot? documentSnapshot]) async {
     String action = 'create';
     if (documentSnapshot != null) {
       action = 'update';
@@ -56,6 +95,21 @@ class _CartScreenState extends State<CartScreen> {
       _productName.text = documentSnapshot['productname'];
     }
 
-    //TODO bottom prompt for user
+    //TODO manual input for the user
+  }
+
+  //Method to update cart item details
+  Future<void> _updateItem([DocumentSnapshot? documentSnapshot]) async {
+    String action = 'create';
+    if (documentSnapshot != null) {
+      action = 'update';
+      _productIdController.text = documentSnapshot['productid'];
+      _customerIdController.text = documentSnapshot['customerid'];
+      _quantityController.text = documentSnapshot['quantity'];
+      _priceController.text = documentSnapshot['price'];
+      _productName.text = documentSnapshot['productname'];
+    }
+
+    //TODO bottom input to update the cart items
   }
 }
