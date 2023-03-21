@@ -3,7 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({Key? key}) : super(key: key);
+  final String productId;
+  final String productName;
+  final String price;
+  const CartScreen(
+      {Key? key,
+      required this.productId,
+      required this.productName,
+      required this.price})
+      : super(key: key);
 
   @override
   State<StatefulWidget> createState() => _CartScreenState();
@@ -20,6 +28,10 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('Product ID : ${widget.productId}');
+    print('Product Name : ${widget.productName}');
+    print('Product price : ${widget.price}');
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Cart'),

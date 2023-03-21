@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:market/screens/allproducts_screen.dart';
 import 'package:market/screens/cart_screen.dart';
 import 'package:market/screens/home_screen.dart';
 import 'package:market/screens/products_screen.dart';
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => HomeScreen()),
         GetPage(name: '/products', page: () => ProductsScreen()),
-        GetPage(name: '/cart', page: () => CartScreen())
+        GetPage(name: '/allprod', page: () => ProductListView())
       ],
     );
   }

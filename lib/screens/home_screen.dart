@@ -22,8 +22,8 @@ class HomeScreen extends StatelessWidget {
                 child: const Text("Go to Products"),
                 onPressed: () => Get.toNamed("/products")),
             ElevatedButton(
-                onPressed: () => Get.toNamed("/cart"),
-                child: const Text("My Cart"))
+                onPressed: () => Get.toNamed("/allprod"),
+                child: const Text("All Products"))
           ],
         )),
         floatingActionButton: FloatingActionButton(
