@@ -27,11 +27,14 @@ class _CartScreenState extends State<CartScreen> {
   final TextEditingController _quantityController = TextEditingController();
   final TextEditingController _productName = TextEditingController();
 
+  var customerId = "123123";
+
   @override
   void initState() {
     super.initState();
     //calling adding item method to cart at the start
-    _createItem(widget.productId, widget.productName, widget.price, "1", "1");
+    _createItem(
+        widget.productId, widget.productName, widget.price, customerId, "1");
   }
 
   @override
@@ -42,7 +45,8 @@ class _CartScreenState extends State<CartScreen> {
       ),
       //using the streambuilder to view all product for the particular customer
       body: StreamBuilder(
-        stream: _cartData.snapshots(),
+        stream:
+            _cartData.where('customerid', isEqualTo: customerId).snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
           if (streamSnapshot.hasData) {
             return ListView.builder(
