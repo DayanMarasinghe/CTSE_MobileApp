@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 class CartScreen extends StatefulWidget {
@@ -27,11 +28,14 @@ class _CartScreenState extends State<CartScreen> {
   final TextEditingController _productName = TextEditingController();
 
   @override
-  Widget build(BuildContext context) {
-    print('Product ID : ${widget.productId}');
-    print('Product Name : ${widget.productName}');
-    print('Product price : ${widget.price}');
+  void initState() {
+    super.initState();
+    //calling adding item method to cart at the start
+    _createItem(widget.productId, widget.productName, widget.price, "1", "1");
+  }
 
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('My Cart'),
@@ -49,10 +53,15 @@ class _CartScreenState extends State<CartScreen> {
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
-                    title: Text(documentSnapshot['productname']),
+                    title: Text(
+                      '\n ${documentSnapshot['productname']}',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                     // ignore: prefer_interpolation_to_compose_strings
                     subtitle: Text(
-                        'Price : ${documentSnapshot['price']} , Quantity : ${documentSnapshot['quantity']}'),
+                        '\nPrice for each : ${documentSnapshot['price']} \nQuantity : ${documentSnapshot['quantity']}\n'),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
@@ -77,12 +86,6 @@ class _CartScreenState extends State<CartScreen> {
           );
         },
       ),
-
-      //add new item into the cart - manual process
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _createItem(),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -95,99 +98,50 @@ class _CartScreenState extends State<CartScreen> {
         const SnackBar(content: Text("You removed an item from the cart")));
   }
 
-  //Method to create  item details
-  Future<void> _createItem([DocumentSnapshot? documentSnapshot]) async {
-    String action = 'create';
-    if (documentSnapshot != null) {
-      action = 'update';
-      _productIdController.text = documentSnapshot['productid'];
-      _customerIdController.text = documentSnapshot['customerid'];
-      _quantityController.text = documentSnapshot['quantity'];
-      _priceController.text = documentSnapshot['price'];
-      _productName.text = documentSnapshot['productname'];
+  //Method to create  item details that will be called in the init
+  Future<void> _createItem(String productId, String productName, String price,
+      String customerID, String qty) async {
+    _productIdController.text = productId;
+    _customerIdController.text = customerID;
+    _quantityController.text = qty;
+    _priceController.text = price;
+    _productName.text = productName;
+
+    final String? dbProductID = _productIdController.text;
+    final String? dbCustomerID = _customerIdController.text;
+    final String? dbProductName = _productName.text;
+    final String? dbPrice = _priceController.text;
+    final String? dbQuantity = _quantityController.text;
+
+    //validation for the passed values
+    if (dbProductID != null ||
+        dbCustomerID != null ||
+        dbProductName != null ||
+        dbPrice != null ||
+        dbQuantity != null) {
+      //insert to collection
+      await _cartData.add({
+        "productid": dbProductID,
+        "customerid": dbCustomerID,
+        "quantity": dbQuantity,
+        "price": dbPrice,
+        "productname": dbProductName
+      });
+
+      //notify user
+      // ignore: use_build_context_synchronously
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("Added to cart")));
+    } else {
+      //notify user
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Oops! Can't add the item to the cart, Try again")));
     }
-
-    //manual input for the user
-    await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        builder: (BuildContext ctx) {
-          return Padding(
-            padding: EdgeInsets.only(
-                top: 20,
-                left: 20,
-                right: 20,
-                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextField(
-                  //letting user only update the quantity
-                  controller: _productIdController,
-                  decoration: const InputDecoration(labelText: 'Product ID'),
-                ),
-                TextField(
-                  controller: _customerIdController,
-                  decoration: const InputDecoration(labelText: 'Customer ID'),
-                ),
-                TextField(
-                  controller: _productName,
-                  decoration: const InputDecoration(labelText: 'Product name'),
-                ),
-                TextField(
-                  controller: _priceController,
-                  decoration: const InputDecoration(labelText: 'Price'),
-                ),
-                TextField(
-                  controller: _quantityController,
-                  decoration: const InputDecoration(labelText: 'Quantity'),
-                ),
-                const SizedBox(
-                  height: 20,
-                ),
-                ElevatedButton(
-                  child: Text('Update'),
-                  onPressed: () async {
-                    final String? productID = _productIdController.text;
-                    final String? customerID = _customerIdController.text;
-                    final String? productName = _productName.text;
-                    final String? price = _priceController.text;
-                    final String? quantity = _quantityController.text;
-                    //validation for the quantity input
-                    if (quantity != null) {
-                      //insert to collection
-                      await _cartData.add({
-                        "productid": productID,
-                        "customerid": customerID,
-                        "quantity": quantity,
-                        "price": price,
-                        "productname": productName
-                      });
-
-                      //clear input fields
-                      _productIdController.text = '';
-                      _customerIdController.text = '';
-                      _productName.text = '';
-                      _priceController.text = '';
-                      _quantityController.text = '';
-
-                      //hide the bottom prompt view
-                      Navigator.of(context).pop();
-                    }
-                  },
-                )
-              ],
-            ),
-          );
-        });
   }
 
   //Method to update cart item details
   Future<void> _updateItem([DocumentSnapshot? documentSnapshot]) async {
-    String action = 'create';
     if (documentSnapshot != null) {
-      action = 'update';
       _productIdController.text = documentSnapshot['productid'];
       _customerIdController.text = documentSnapshot['customerid'];
       _quantityController.text = documentSnapshot['quantity'];
@@ -214,6 +168,11 @@ class _CartScreenState extends State<CartScreen> {
                   //letting user only update the quantity
                   controller: _quantityController,
                   decoration: const InputDecoration(labelText: 'Quantity'),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: <TextInputFormatter>[
+                    FilteringTextInputFormatter
+                        .digitsOnly, //Only allow digit keyboard
+                  ],
                 ),
                 const SizedBox(
                   height: 20,
