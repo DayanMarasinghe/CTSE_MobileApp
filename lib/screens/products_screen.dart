@@ -9,6 +9,8 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path/path.dart' as Path;
 import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
 
+import '../core/widgets/NavDrawer.dart';
+
 class ProductsScreen extends StatefulWidget {
   const ProductsScreen({Key? key}) : super(key: key);
 
@@ -21,6 +23,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       FirebaseFirestore.instance.collection('products');
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
+  final TextEditingController _descriptionController = TextEditingController();
   String uploadUrl = "";
   String viewImg = "";
   firebase_storage.FirebaseStorage storage =
@@ -33,14 +36,9 @@ class _ProductsScreenState extends State<ProductsScreen> {
   Widget build(context) {
     return Scaffold(
       appBar: AppBar(
-        leading: GestureDetector(
-          onTap: () { /* Write listener code here */ },
-          child: Icon(
-            Icons.menu,  // add custom icons also
-          ),
-        ),
         title: const Text('Products'),
       ),
+      drawer: const NavDrawer(),
       // Using StreamBuilder to display all products from Firestore in real-time
       body: StreamBuilder(
         stream: _productsData.snapshots(),
@@ -77,8 +75,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                                   _createOrUpdate(documentSnapshot)),
                           IconButton(
                               icon: const Icon(Icons.delete),
-                              onPressed: () =>
-                                  _deleteProduct(documentSnapshot.id)),
+                              onPressed: () => _showMyDialog(documentSnapshot)),
                         ],
                       ),
                     ),
@@ -164,6 +161,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
       action = 'update';
       _nameController.text = documentSnapshot['name'];
       _priceController.text = documentSnapshot['price'].toString();
+      _descriptionController.text = documentSnapshot['description'];
       viewImg = documentSnapshot['imgURL'];
     }
     await showModalBottomSheet(
@@ -225,6 +223,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
                   decoration: const InputDecoration(labelText: 'Product Name'),
                 ),
                 TextField(
+                  controller: _descriptionController,
+                  decoration:
+                      const InputDecoration(labelText: 'Product Description'),
+                ),
+                TextField(
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   controller: _priceController,
@@ -243,14 +246,17 @@ class _ProductsScreenState extends State<ProductsScreen> {
                           : 'Update'),
                   onPressed: () async {
                     final String? name = _nameController.text;
+                    final String? description = _descriptionController.text;
                     final double? price =
                         double.tryParse(_priceController.text);
+
                     if (name != null && price != null) {
                       if (action == 'create') {
                         // Persist a new product to Firestore
                         await _productsData.add({
                           "name": name,
                           "price": price,
+                          "description": description,
                           "imgURL": uploadUrl
                         });
                       }
@@ -260,13 +266,15 @@ class _ProductsScreenState extends State<ProductsScreen> {
                         await _productsData.doc(documentSnapshot!.id).update({
                           "name": name,
                           "price": price,
-                          "imgURL": uploadUrl
+                          "description": description,
+                          "imgURL": uploadUrl.isNotEmpty ? uploadUrl : viewImg
                         });
                       }
 
                       // Clear the fields
                       _nameController.text = '';
                       _priceController.text = '';
+                      _descriptionController.text = '';
                       uploadUrl = '';
                       _photo = null;
 
@@ -279,6 +287,43 @@ class _ProductsScreenState extends State<ProductsScreen> {
             ),
           );
         });
+  }
+
+  Future<void> _showMyDialog(documentSnapshot) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Product'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: const <Widget>[
+                Text('Are you sure to delete this product'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text(
+                'Delete',
+                style: TextStyle(color: Colors.red),
+              ),
+              onPressed: () {
+                _deleteProduct(documentSnapshot.id);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void _showPicker(context) {
