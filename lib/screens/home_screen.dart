@@ -20,7 +20,8 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
                 child: const Text("Go to Products"),
                 onPressed: () => Get.toNamed("/products")),
-            ElevatedButton(onPressed: () => Get.toNamed("/cusreg"), child: const Text("Add Customer"))
+            ElevatedButton(onPressed: () => Get.toNamed("/cusreg"), child: const Text("View Profile")),
+            ElevatedButton(onPressed: () => Get.toNamed("/newuser"), child: const Text("Create New Account"))
           ],)),
              
 
@@ -28,6 +29,9 @@ class HomeScreen extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add), onPressed: c.increment));
   }
+
+
+  
 }
 
 class Other extends StatelessWidget {

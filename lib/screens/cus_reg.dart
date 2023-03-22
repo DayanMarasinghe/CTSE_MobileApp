@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:location/location.dart';
 
 class CusReg extends StatefulWidget {
   const CusReg({Key? key}) : super(key: key);
@@ -15,11 +16,13 @@ class _CusRegState extends State<CusReg> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
+  final Location _location = Location();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Customer'),
+        title: const Text('Your Profile'),
       ),
       // Using StreamBuilder to display all products from Firestore in real-time
       body: StreamBuilder(
@@ -63,12 +66,6 @@ class _CusRegState extends State<CusReg> {
           );
         },
       ),
-
-      /// Add new product
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _createOrUpdate(),
-        child: const Icon(Icons.add),
-      ),
     );
   }
 
@@ -77,8 +74,8 @@ class _CusRegState extends State<CusReg> {
     await _cusData.doc(customerId).delete();
 
     // Show a snackbar
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-        content: Text('You have successfully deleted a product')));
+    ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('You have successfully deleted account')));
   }
 
   /// Method to create or update product details
@@ -131,6 +128,45 @@ class _CusRegState extends State<CusReg> {
                 const SizedBox(
                   height: 20,
                 ),
+                                ElevatedButton(
+                  child: Text(action == 'create' ? 'Create' : 'New Location'),
+                  onPressed: () async {
+                    bool _serviceEnabled;
+                    PermissionStatus _permissionGranted;
+                    LocationData _locationData;
+
+                    _serviceEnabled = await _location.serviceEnabled();
+                    if (!_serviceEnabled) {
+                      _serviceEnabled = await _location.requestService();
+                      if (!_serviceEnabled) {
+                        return;
+                      }
+                    }
+
+                    _permissionGranted = await _location.hasPermission();
+                    if (_permissionGranted == PermissionStatus.denied) {
+                      _permissionGranted = await _location.requestPermission();
+                      if (_permissionGranted != PermissionStatus.granted) {
+                        return;
+                      }
+                    }
+
+                    // Get location data
+                    _locationData = await _location.getLocation();
+
+                      if (action == 'update') {
+                        // Update the product
+                        await _cusData.doc(documentSnapshot!.id).update({
+                          "latitude": _locationData.latitude,
+                          "longitude": _locationData.longitude,
+                        });
+                      }
+                    ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text("Your location was successfully updated")));
+                      // Hide the bottom sheet
+                      Navigator.of(context).pop();
+                  },
+                ),
                 ElevatedButton(
                   child: Text(action == 'create' ? 'Create' : 'Update'),
                   onPressed: () async {
@@ -142,16 +178,6 @@ class _CusRegState extends State<CusReg> {
                         password != null &&
                         email != null &&
                         phone != null) {
-                      if (action == 'create') {
-                        // Persist a new product to Firestore
-                        await _cusData.add({
-                          "name": name,
-                          "password": password,
-                          "email": email,
-                          "phone": phone
-                        });
-                      }
-
                       if (action == 'update') {
                         // Update the product
                         await _cusData.doc(documentSnapshot!.id).update({
