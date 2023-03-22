@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:market/screens/cus_reg.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class NewUser extends StatefulWidget {
   const NewUser({Key? key}) : super(key: key);
@@ -130,7 +131,7 @@ class _NewUserState extends State<NewUser> {
         _passwordError == null &&
         _emailError == null &&
         _phoneError == null) {
-      await _cusData.add({
+      final cusRef = await _cusData.add({
         "name": name,
         "password": password,
         "email": email,
@@ -139,9 +140,12 @@ class _NewUserState extends State<NewUser> {
         "longitude": _locationData.longitude,
       });
 
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Your account was successfully created")));
-    
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('cusId', cusRef.id);
+
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+          content: Text("Your account was successfully created")));
+
       _redirectToPage();
     }
   }
