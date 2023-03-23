@@ -1,8 +1,11 @@
+import 'dart:ffi';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
+import 'package:market/screens/drop_down.dart';
 import '../core/widgets/NavDrawer.dart';
+
+var list = [];
 
 class StocksScreen extends StatefulWidget {
   const StocksScreen({Key? key}) : super(key: key);
@@ -13,13 +16,35 @@ class StocksScreen extends StatefulWidget {
 
 class _StocksScreenState extends State<StocksScreen> {
   final CollectionReference _stocksData =
-  FirebaseFirestore.instance.collection('stocks');
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _priceController = TextEditingController();
-  final TextEditingController _descriptionController = TextEditingController();
+      FirebaseFirestore.instance.collection('stocks');
+
+  final CollectionReference _productsData =
+      FirebaseFirestore.instance.collection('products');
+
+  final TextEditingController _supplierNameController = TextEditingController();
+  final TextEditingController _quantityController = TextEditingController();
+  late Object product = '';
+  bool setDefaultMake = true;
   bool isUploading = false;
+  // Initial Selected Value
+
+  @override
+  void initState() {
+    FirebaseFirestore.instance.collection("products").get().then(
+      (querySnapshot) {
+        for (var docSnapshot in querySnapshot.docs) {
+          list.add(docSnapshot.data());
+          print(docSnapshot.data());
+        }
+      },
+      onError: (e) => print("Error completing: $e"),
+    );
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
+    print(_productsData.doc());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stocks'),
@@ -34,22 +59,21 @@ class _StocksScreenState extends State<StocksScreen> {
               itemCount: streamSnapshot.data!.docs.length,
               itemBuilder: (context, index) {
                 final DocumentSnapshot documentSnapshot =
-                streamSnapshot.data!.docs[index];
+                    streamSnapshot.data!.docs[index];
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
-                    // leading: ConstrainedBox(
-                    //   constraints: const BoxConstraints(
-                    //     minWidth: 44,
-                    //     minHeight: 44,
-                    //     maxWidth: 64,
-                    //     maxHeight: 64,
-                    //   ),
-                    //   child: Image.network(documentSnapshot['imgURL'],
-                    //       fit: BoxFit.cover),
-                    // ),
-                    title: Text(documentSnapshot['supplier']),
-                    // subtitle: Text(documentSnapshot['price'].toString()),
+                    title: Row(
+                      children: [
+                        Text(documentSnapshot['product']['name']),
+                        Padding(
+                          padding: const EdgeInsets.only(left: 8.0),
+                          child:
+                              Text('- Qty : ${documentSnapshot['quantity']}'),
+                        )
+                      ],
+                    ),
+                    subtitle:  Text(documentSnapshot['supplier']),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
@@ -61,7 +85,8 @@ class _StocksScreenState extends State<StocksScreen> {
                                   _createOrUpdate(documentSnapshot)),
                           IconButton(
                               icon: const Icon(Icons.delete),
-                              onPressed: () => _showDeleteDialog(documentSnapshot)),
+                              onPressed: () =>
+                                  _showDeleteDialog(documentSnapshot)),
                         ],
                       ),
                     ),
@@ -77,7 +102,7 @@ class _StocksScreenState extends State<StocksScreen> {
         },
       ),
 
-      /// Add new product
+      /// Add new stocks
       floatingActionButton: FloatingActionButton(
         onPressed: () => _createOrUpdate(),
         child: const Icon(Icons.add),
@@ -85,15 +110,14 @@ class _StocksScreenState extends State<StocksScreen> {
     );
   }
 
-  /// Method to create or update product details
+  /// Method to create or update stocks details
   Future<void> _createOrUpdate([DocumentSnapshot? documentSnapshot]) async {
     String action = 'create';
     if (documentSnapshot != null) {
       action = 'update';
-      _nameController.text = documentSnapshot['name'];
-      _priceController.text = documentSnapshot['price'].toString();
-      _descriptionController.text = documentSnapshot['description'];
-      // viewImg = documentSnapshot['imgURL'];
+      _supplierNameController.text = documentSnapshot['supplier'];
+      _quantityController.text = documentSnapshot['quantity'].toString();
+      product = documentSnapshot['product'];
     }
     await showModalBottomSheet(
         isScrollControlled: true,
@@ -110,32 +134,26 @@ class _StocksScreenState extends State<StocksScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-
                 TextField(
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Product Name'),
+                  controller: _supplierNameController,
+                  decoration: const InputDecoration(labelText: 'Supplier Name'),
                 ),
-                TextField(
-                  controller: _descriptionController,
-                  decoration:
-                  const InputDecoration(labelText: 'Product Description'),
+                Padding(
+                  padding: const EdgeInsets.only(top: 18.0, bottom: 8.0),
+                  child: DropDown(onItemChanged: (value) {
+                    // filter the full object of the product
+                    List outputList =
+                        list.where((o) => o['name'] == value).toList();
+                    product = outputList[0];
+                  }),
                 ),
                 TextField(
                   keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-                  controller: _priceController,
+                      const TextInputType.numberWithOptions(decimal: true),
+                  controller: _quantityController,
                   decoration: const InputDecoration(
-                    labelText: 'Price',
+                    labelText: 'Quantity',
                   ),
-                ),
-                DropdownButton<String>(
-                  items: <String>['A', 'B', 'C', 'D'].map((String value) {
-                    return DropdownMenuItem<String>(
-                      value: value,
-                      child: Text(value),
-                    );
-                  }).toList(),
-                  onChanged: (_) {},
                 ),
                 const SizedBox(
                   height: 20,
@@ -144,39 +162,37 @@ class _StocksScreenState extends State<StocksScreen> {
                   child: Text(isUploading == true
                       ? "Uploading"
                       : action == 'create'
-                      ? 'Create'
-                      : 'Update'),
+                          ? 'Create'
+                          : 'Update'),
                   onPressed: () async {
-                    final String? name = _nameController.text;
-                    final String? description = _descriptionController.text;
-                    final double? price =
-                    double.tryParse(_priceController.text);
+                    final String? suppliner = _supplierNameController.text;
+                    final String? quantity = _quantityController.text;
 
-                    if (name != null && price != null) {
+                    if (suppliner != null) {
                       if (action == 'create') {
-                        // Persist a new product to Firestore
+                        // Persist a new stocks to Firestore
                         await _stocksData.add({
-                          "name": name,
-                          "price": price,
-                          "description": description,
+                          "supplier": suppliner,
+                          "quantity": quantity,
+                          "product": product,
                           // "imgURL": uploadUrl
                         });
                       }
 
                       if (action == 'update') {
-                        // Update the product
+                        // Update the stocks
                         await _stocksData.doc(documentSnapshot!.id).update({
-                          "name": name,
-                          "price": price,
-                          "description": description,
+                          "supplier": suppliner,
+                          "quantity": quantity,
+                          "product": product,
                           // "imgURL": uploadUrl.isNotEmpty ? uploadUrl : viewImg
                         });
                       }
 
                       // Clear the fields
-                      _nameController.text = '';
-                      _priceController.text = '';
-                      _descriptionController.text = '';
+                      _supplierNameController.text = '';
+                      _quantityController.text = '';
+                      product = '';
                       // uploadUrl = '';
                       // _photo = null;
 
@@ -197,11 +213,11 @@ class _StocksScreenState extends State<StocksScreen> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Delete Product'),
+          title: const Text('Delete Stock'),
           content: SingleChildScrollView(
             child: ListBody(
               children: const <Widget>[
-                Text('Are you sure to delete this product'),
+                Text('Are you sure to delete this Stock'),
               ],
             ),
           ),
@@ -218,7 +234,7 @@ class _StocksScreenState extends State<StocksScreen> {
                 style: TextStyle(color: Colors.red),
               ),
               onPressed: () {
-                _deleteProduct(documentSnapshot.id);
+                _deleteStock(documentSnapshot.id);
                 Navigator.of(context).pop();
               },
             ),
@@ -229,11 +245,13 @@ class _StocksScreenState extends State<StocksScreen> {
   }
 
   /// Method to delete a stocks by id
-  Future<void> _deleteProduct(String productId) async {
-    await _stocksData.doc(productId).delete();
+  Future<void> _deleteStock(String stockId) async {
+    await _stocksData.doc(stockId).delete();
 
     // Show a snackbar
-    ScaffoldMessenger.of(context as BuildContext).showSnackBar(const SnackBar(
-        content: Text('You have successfully deleted a product')));
+    ScaffoldMessenger.of(context as BuildContext).showSnackBar(
+        const SnackBar(content: Text('You have successfully deleted a stock')));
   }
 }
+
+class DropdownSearch {}

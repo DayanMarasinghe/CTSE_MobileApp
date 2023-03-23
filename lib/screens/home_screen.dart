@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:market/core/controllers/sampleController.dart';
 
+import '../core/widgets/NavDrawer.dart';
+
 class HomeScreen extends StatelessWidget {
   @override
   Widget build(context) {
@@ -11,14 +13,14 @@ class HomeScreen extends StatelessWidget {
     final SampleController c = Get.put(SampleController());
 
     return Scaffold(
-      // Use Obx(()=> to update Text() whenever count is changed.
+      // Use Obx(()=> to update Text() whenever couxt is changed.
         appBar: AppBar(title: Obx(() => Text("Clicks: ${c.count}"))),
-
+        drawer: const NavDrawer(),
         // Replace the 8 lines Navigator.push by a simple Get.to(). You don't need context
         body: Center(
             child: ElevatedButton(
                 child: const Text("Go to Products"),
-                onPressed: () => Get.toNamed("/products"))),
+                onPressed: () => Get.toNamed("/admin"))),
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add), onPressed: c.increment));
   }

@@ -33,6 +33,11 @@ class NavDrawer extends StatelessWidget {
             onTap: () => {Get.toNamed("/products")},
           ),
           ListTile(
+            leading: Icon(Icons.shopping_bag),
+            title: Text('Stocks'),
+            onTap: () => {Get.toNamed("/stocks")},
+          ),
+          ListTile(
             leading: Icon(Icons.exit_to_app),
             title: Text('Logout'),
             onTap: () => {Navigator.of(context).pop()},
