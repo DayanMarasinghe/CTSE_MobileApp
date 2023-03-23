@@ -20,6 +20,7 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
                 child: const Text("Go to Products"),
                 onPressed: () => Get.toNamed("/products")),
+            ElevatedButton(onPressed: () => Get.toNamed("/login"), child: const Text("Login")),
             ElevatedButton(onPressed: () => Get.toNamed("/newuser"), child: const Text("Create New Account"))
           ],)),
              

@@ -7,6 +7,7 @@ import 'package:market/screens/products_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:market/screens/cus_reg.dart';
 import 'package:market/screens/new_user.dart';
+import 'package:market/screens/login.dart';
 
 // void main() => runApp(MyApp());
 
@@ -32,7 +33,8 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/', page: () => HomeScreen()),
         GetPage(name: '/products', page: () => ProductsScreen()),
         GetPage(name: '/cusreg', page: () => CusReg()),
-        GetPage(name: '/newuser', page: ()=> NewUser())
+        GetPage(name: '/newuser', page: ()=> NewUser()),
+        GetPage(name: '/login', page: ()=> LoginPage()),
       ],
     );
   }
@@ -142,11 +144,6 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
