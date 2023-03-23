@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:market/screens/allproducts_screen.dart';
+import 'package:market/screens/cart_screen.dart';
 import 'package:market/screens/home_screen.dart';
 import 'package:market/screens/products_screen.dart';
 // import 'package:firebase_core/firebase_core.dart';
@@ -32,9 +34,10 @@ class MyApp extends StatelessWidget {
       getPages: [
         GetPage(name: '/', page: () => HomeScreen()),
         GetPage(name: '/products', page: () => ProductsScreen()),
+        GetPage(name: '/allprod', page: () => ProductListView()),
         GetPage(name: '/cusreg', page: () => CusReg()),
-        GetPage(name: '/newuser', page: ()=> NewUser()),
-        GetPage(name: '/login', page: ()=> LoginPage()),
+        GetPage(name: '/newuser', page: () => NewUser()),
+        GetPage(name: '/login', page: () => LoginPage()),
       ],
     );
   }
