@@ -6,6 +6,7 @@ import 'package:market/screens/products_screen.dart';
 // import 'package:firebase_core/firebase_core.dart';
 // import 'firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:market/screens/stocks_screen.dart';
 
 // void main() => runApp(MyApp());
 
@@ -29,6 +30,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/', page: () => HomeScreen()),
         GetPage(name: '/products', page: () => ProductsScreen()),
         GetPage(name: '/admin', page: () => AdminScreen()),
+        GetPage(name: '/stocks', page: () => StocksScreen()),
       ],
     );
   }
