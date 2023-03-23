@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class CartScreen extends StatefulWidget {
   final String productId;
@@ -49,40 +50,89 @@ class _CartScreenState extends State<CartScreen> {
             _cartData.where('customerid', isEqualTo: customerId).snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
           if (streamSnapshot.hasData) {
-            return ListView.builder(
-              itemCount: streamSnapshot.data!.docs.length,
-              itemBuilder: (context, index) {
-                final DocumentSnapshot documentSnapshot =
-                    streamSnapshot.data!.docs[index];
-                return Card(
-                  margin: const EdgeInsets.all(10),
-                  child: ListTile(
-                    title: Text(
-                      '\n ${documentSnapshot['productname']}',
+            //calculate the total price from all the cart items according to quantity
+            final total = streamSnapshot.data!.docs.fold<double>(
+                0.0,
+                (total, doc) =>
+                    total +
+                    (double.parse(doc['price']) * int.parse(doc['quantity'])));
+            return Column(
+              children: [
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: streamSnapshot.data!.docs.length,
+                    itemBuilder: (context, index) {
+                      final DocumentSnapshot documentSnapshot =
+                          streamSnapshot.data!.docs[index];
+                      final priceEach = double.parse(documentSnapshot['price']);
+                      final quantityEach =
+                          int.parse(documentSnapshot['quantity']);
+                      final totalEach = priceEach * quantityEach;
+                      return Card(
+                        margin: const EdgeInsets.all(10),
+                        child: ListTile(
+                          title: Text(
+                            '\n ${documentSnapshot['productname']}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 10.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '\n\tPrice for each: Rs.${priceEach.toStringAsFixed(2)}/=',
+                                ),
+                                Text(
+                                  '\n\tQuantity: $quantityEach',
+                                ),
+                                Text(
+                                  '\n\tTotal: Rs.${totalEach.toStringAsFixed(2)}/=',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          trailing: SizedBox(
+                            width: 100,
+                            child: Row(
+                              children: [
+                                IconButton(
+                                    onPressed: () =>
+                                        _updateItem(documentSnapshot),
+                                    icon: const Icon(Icons.edit)),
+                                IconButton(
+                                    onPressed: () => _deleteItemFromCart(
+                                        documentSnapshot.id),
+                                    icon: const Icon(Icons.delete))
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                Container(
+                  //View the total amount for all product
+                  height: 50,
+                  color: Colors.blue,
+                  child: Center(
+                    child: Text(
+                      'Total: Rs.${total.toStringAsFixed(2)}/=',
                       style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    // ignore: prefer_interpolation_to_compose_strings
-                    subtitle: Text(
-                        '\nPrice for each : ${documentSnapshot['price']} \nQuantity : ${documentSnapshot['quantity']}\n'),
-                    trailing: SizedBox(
-                      width: 100,
-                      child: Row(
-                        children: [
-                          IconButton(
-                              onPressed: () => _updateItem(documentSnapshot),
-                              icon: const Icon(Icons.edit)),
-                          IconButton(
-                              onPressed: () =>
-                                  _deleteItemFromCart(documentSnapshot.id),
-                              icon: const Icon(Icons.delete))
-                        ],
-                      ),
-                    ),
                   ),
-                );
-              },
+                ),
+              ],
             );
           }
           return const Center(
@@ -96,50 +146,40 @@ class _CartScreenState extends State<CartScreen> {
   //Method to delete the cart item using the product id
   Future<void> _deleteItemFromCart(String productID) async {
     await _cartData.doc(productID).delete();
-
-    //delete snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("You removed an item from the cart")));
+    showToastMessage("You removed an item from the cart");
   }
 
-  //Method to create  item details that will be called in the init
   Future<void> _createItem(String productId, String productName, String price,
       String customerID, String qty) async {
-    _productIdController.text = productId;
-    _customerIdController.text = customerID;
-    _quantityController.text = qty;
-    _priceController.text = price;
-    _productName.text = productName;
+    // Get the current cart items for the customer
+    final cartItems = await _cartData
+        .where('customerid', isEqualTo: customerID)
+        .where('productid', isEqualTo: productId)
+        .get();
 
-    final String? dbProductID = _productIdController.text;
-    final String? dbCustomerID = _customerIdController.text;
-    final String? dbProductName = _productName.text;
-    final String? dbPrice = _priceController.text;
-    final String? dbQuantity = _quantityController.text;
+    // Check if the item already exists in the cart
+    if (cartItems.docs.isNotEmpty) {
+      // Update the quantity of the existing item
+      final existingCartItem = cartItems.docs.first;
+      final existingQuantity = int.parse(existingCartItem['quantity']);
+      final newQuantity = existingQuantity + int.parse(qty);
+      await existingCartItem.reference
+          .update({'quantity': newQuantity.toString()});
 
-    //validation for the passed values
-    if (dbProductID != null ||
-        dbCustomerID != null ||
-        dbProductName != null ||
-        dbPrice != null ||
-        dbQuantity != null) {
-      //insert to collection
+      // Notify user
+      showToastMessage("Item quantity updated in cart");
+    } else {
+      // Insert the item into the cart
       await _cartData.add({
-        "productid": dbProductID,
-        "customerid": dbCustomerID,
-        "quantity": dbQuantity,
-        "price": dbPrice,
-        "productname": dbProductName
+        "productid": productId,
+        "customerid": customerID,
+        "quantity": qty,
+        "price": price,
+        "productname": productName
       });
 
-      //notify user
-      // ignore: use_build_context_synchronously
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text("Added to cart")));
-    } else {
-      //notify user
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-          content: Text("Oops! Can't add the item to the cart, Try again")));
+      // Notify user
+      showToastMessage("Added to cart");
     }
   }
 
@@ -202,5 +242,18 @@ class _CartScreenState extends State<CartScreen> {
             ),
           );
         });
+  }
+
+  //Method to show the toast message
+  void showToastMessage(String message) {
+    Fluttertoast.showToast(
+      msg: message,
+      toastLength: Toast.LENGTH_SHORT,
+      gravity: ToastGravity.BOTTOM,
+      timeInSecForIosWeb: 1,
+      backgroundColor: Colors.grey[600],
+      textColor: Colors.white,
+      fontSize: 12.0,
+    );
   }
 }
