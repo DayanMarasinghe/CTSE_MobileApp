@@ -16,7 +16,7 @@ class ProductListView extends StatelessWidget {
             FirebaseFirestore.instance.collection('product_view').snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) {
-            return Center(
+            return const Center(
               child: CircularProgressIndicator(),
             );
           }
@@ -27,7 +27,7 @@ class ProductListView extends StatelessWidget {
               DocumentSnapshot product = snapshot.data!.docs[index];
               return ListTile(
                 title: Text(product['name']),
-                subtitle: Text('\$${product['price']}'),
+                subtitle: Text('Rs.${product['price']}/='),
                 trailing: IconButton(
                   icon: Icon(Icons.shopping_cart),
                   onPressed: () {
