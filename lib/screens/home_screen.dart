@@ -11,8 +11,8 @@ class HomeScreen extends StatelessWidget {
     final SampleController c = Get.put(SampleController());
 
     return Scaffold(
-        // Use Obx(()=> to update Text() whenever count is changed.
-        appBar: AppBar(title: Obx(() => Text("Clicks: ${c.count}"))),
+        
+        appBar: AppBar(title: Text("Application")),
 
         // Replace the 8 lines Navigator.push by a simple Get.to(). You don't need context
         body: Center(
@@ -31,9 +31,7 @@ class HomeScreen extends StatelessWidget {
                 onPressed: () => Get.toNamed("/newuser"),
                 child: const Text("Create New Account"))
           ],
-        )),
-        floatingActionButton: FloatingActionButton(
-            child: Icon(Icons.add), onPressed: c.increment));
+        )),);
   }
 }
 

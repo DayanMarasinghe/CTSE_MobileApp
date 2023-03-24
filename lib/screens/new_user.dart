@@ -164,10 +164,7 @@ Widget build(BuildContext context) {
   }
 
   void _redirectToPage() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => CusReg()),
-    );
+    Navigator.of(context).pushNamed('/allprod');
   }
 
   Future<void> _createOrUpdate([DocumentSnapshot? documentSnapshot]) async {

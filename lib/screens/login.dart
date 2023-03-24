@@ -25,7 +25,7 @@ class _LoginPageState extends State<LoginPage> {
       );
       print('User ${userCredential.user!.uid} logged in');
 
-      Navigator.of(context).pushNamed('/home');
+      Navigator.of(context).pushNamed('/allprod');
     } on FirebaseAuthException catch (e) {
       if (e.code == 'user-not-found') {
         print('No user found for that email.');
