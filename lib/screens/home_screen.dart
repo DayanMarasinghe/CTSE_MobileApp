@@ -27,9 +27,6 @@ class HomeScreen extends StatelessWidget {
             ElevatedButton(
                 onPressed: () => Get.toNamed("/login"),
                 child: const Text("Login")),
-            ElevatedButton(
-                onPressed: () => Get.toNamed("/newuser"),
-                child: const Text("Create New Account"))
           ],
         )),);
   }
