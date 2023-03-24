@@ -12,7 +12,7 @@ class HomeScreen extends StatelessWidget {
 
     return Scaffold(
         
-        appBar: AppBar(title: Text("Application")),
+        appBar: AppBar(title: Text("GroceryGo")),
 
         // Replace the 8 lines Navigator.push by a simple Get.to(). You don't need context
         body: Center(
