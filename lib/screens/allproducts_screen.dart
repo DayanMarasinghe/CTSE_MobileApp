@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:market/screens/cart_screen.dart';
+import 'package:market/screens/cus_reg.dart';
 
 class ProductListView extends StatelessWidget {
   const ProductListView({super.key});
@@ -10,6 +11,15 @@ class ProductListView extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Product List'),
+          leading: IconButton(
+          icon: Icon(Icons.person),
+          onPressed: () {
+                Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CusReg()),
+                );
+          },
+        ),
       ),
       body: StreamBuilder(
         stream:
