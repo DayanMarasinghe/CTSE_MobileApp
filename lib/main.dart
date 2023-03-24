@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:market/screens/about_screen.dart';
 import 'package:market/screens/admin_screen.dart';
 import 'package:market/screens/home_screen.dart';
 import 'package:market/screens/products_screen.dart';
@@ -31,6 +32,7 @@ class MyApp extends StatelessWidget {
         GetPage(name: '/products', page: () => ProductsScreen()),
         GetPage(name: '/admin', page: () => AdminScreen()),
         GetPage(name: '/stocks', page: () => StocksScreen()),
+        GetPage(name: '/about', page: () => AboutScreen()),
       ],
     );
   }

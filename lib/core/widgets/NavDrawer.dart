@@ -13,7 +13,7 @@ class NavDrawer extends StatelessWidget {
         children: <Widget>[
           DrawerHeader(
             child: Text(
-              'Side menu',
+              'Market',
               style: TextStyle(color: Colors.white, fontSize: 25),
             ),
             decoration: BoxDecoration(
@@ -36,6 +36,11 @@ class NavDrawer extends StatelessWidget {
             leading: Icon(Icons.shopping_bag),
             title: Text('Stocks'),
             onTap: () => {Get.toNamed("/stocks")},
+          ),
+          ListTile(
+            leading: Icon(Icons.info),
+            title: Text('About'),
+            onTap: () => {Get.toNamed("/about")},
           ),
           ListTile(
             leading: Icon(Icons.exit_to_app),

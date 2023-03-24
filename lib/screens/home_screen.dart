@@ -19,7 +19,7 @@ class HomeScreen extends StatelessWidget {
         // Replace the 8 lines Navigator.push by a simple Get.to(). You don't need context
         body: Center(
             child: ElevatedButton(
-                child: const Text("Go to Products"),
+                child: const Text("Go to Admin"),
                 onPressed: () => Get.toNamed("/admin"))),
         floatingActionButton: FloatingActionButton(
             child: Icon(Icons.add), onPressed: c.increment));
