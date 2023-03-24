@@ -35,72 +35,72 @@ class _NewUserState extends State<NewUser> {
     });
   }
 
-Widget build(BuildContext context) {
-  return Scaffold(
-    appBar: AppBar(
-      title: const Text('Create User'),
-    ),
-    body: Padding(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: CarouselSlider(
-              items: [
-                Image.asset('assets/images/man.png'),
-                Image.asset('assets/images/woman.png'),
-              ],
-              options: CarouselOptions(
-                height: 200.0,
-                enlargeCenterPage: true,
-                enableInfiniteScroll: false,
-                initialPage: 0,
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Create User'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: CarouselSlider(
+                items: [
+                  Image.asset('assets/images/man.png'),
+                  Image.asset('assets/images/woman.png'),
+                ],
+                options: CarouselOptions(
+                  height: 200.0,
+                  enlargeCenterPage: true,
+                  enableInfiniteScroll: false,
+                  initialPage: 0,
+                  autoPlay: true, // Add this line
+                  autoPlayInterval: Duration(seconds: 3), // Add this line
+                ),
               ),
             ),
-          ),
-          TextField(
-            controller: _nameController,
-            decoration: InputDecoration(
-              labelText: 'Name',
-              errorText: _nameError,
+            TextField(
+              controller: _nameController,
+              decoration: InputDecoration(
+                labelText: 'Name',
+                errorText: _nameError,
+              ),
             ),
-          ),
-          TextField(
-            controller: _passwordController,
-            decoration: InputDecoration(
-              labelText: 'Password',
-              errorText: _passwordError,
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                errorText: _passwordError,
+              ),
             ),
-          ),
-          TextField(
-            controller: _emailController,
-            decoration: InputDecoration(
-              labelText: 'Email',
-              errorText: _emailError,
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(
+                labelText: 'Email',
+                errorText: _emailError,
+              ),
             ),
-          ),
-          TextField(
-            controller: _phoneController,
-            decoration: InputDecoration(
-              labelText: 'Phone',
-              errorText: _phoneError,
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(
+                labelText: 'Phone',
+                errorText: _phoneError,
+              ),
             ),
-          ),
-          const SizedBox(
-            height: 20,
-          ),
-          ElevatedButton(
-            child: const Text('Create'),
-            onPressed: _onCreate,
-          ),
-        ],
+            const SizedBox(
+              height: 20,
+            ),
+            ElevatedButton(
+              child: const Text('Create'),
+              onPressed: _onCreate,
+            ),
+          ],
+        ),
       ),
-    ),
-  );
-}
-
-
+    );
+  }
 
   void _onCreate() async {
     final String? name = _nameController.text.trim();
