@@ -3,15 +3,16 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class DropDown extends StatefulWidget {
-  const DropDown({Key? key,required this.onItemChanged}) : super(key: key);
+  const DropDown({Key? key,required this.onItemChanged, required this.selectedValue}) : super(key: key);
   final Function(String) onItemChanged;
+  final String selectedValue;
   @override
   State<DropDown> createState() => _DropDownState();
 }
 
 class _DropDownState extends State<DropDown> {
   List<String> list = [];
-  String dropdownValue = 'Pasta';
+  String dropdownValue = 'Milo';
 
   @override
   void initState() {

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:market/screens/drop_down.dart';
 import '../core/widgets/NavDrawer.dart';
+import 'package:intl/intl.dart';
 
 var list = [];
 
@@ -15,6 +16,7 @@ class StocksScreen extends StatefulWidget {
 }
 
 class _StocksScreenState extends State<StocksScreen> {
+  //get data from Firebase
   final CollectionReference _stocksData =
       FirebaseFirestore.instance.collection('stocks');
 
@@ -23,13 +25,14 @@ class _StocksScreenState extends State<StocksScreen> {
 
   final TextEditingController _supplierNameController = TextEditingController();
   final TextEditingController _quantityController = TextEditingController();
+  String viewImg = "";
+  String dropdownValue = '';
   late Object product = '';
-  bool setDefaultMake = true;
-  bool isUploading = false;
-  // Initial Selected Value
+  DateTime selectedDate = DateTime.now();
 
   @override
   void initState() {
+    //save product list in list object
     FirebaseFirestore.instance.collection("products").get().then(
       (querySnapshot) {
         for (var docSnapshot in querySnapshot.docs) {
@@ -44,16 +47,18 @@ class _StocksScreenState extends State<StocksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print(_productsData.doc());
+    //print(_productsData.doc());
     return Scaffold(
       appBar: AppBar(
         title: const Text('Stocks'),
+        backgroundColor: Colors.green,
       ),
       drawer: const NavDrawer(),
       // Using StreamBuilder to display all products from Firestore in real-time
       body: StreamBuilder(
         stream: _stocksData.snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+          //check isEmpty
           if (streamSnapshot.hasData) {
             return ListView.builder(
               itemCount: streamSnapshot.data!.docs.length,
@@ -63,6 +68,16 @@ class _StocksScreenState extends State<StocksScreen> {
                 return Card(
                   margin: const EdgeInsets.all(10),
                   child: ListTile(
+                    leading: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minWidth: 44,
+                        minHeight: 44,
+                        maxWidth: 64,
+                        maxHeight: 64,
+                      ),
+                      child: Image.network(documentSnapshot['product']['imgURL'],
+                          fit: BoxFit.cover),
+                    ),
                     title: Row(
                       children: [
                         Text(documentSnapshot['product']['name']),
@@ -73,7 +88,12 @@ class _StocksScreenState extends State<StocksScreen> {
                         )
                       ],
                     ),
-                    subtitle:  Text(documentSnapshot['supplier']),
+                    subtitle:  Column(crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(documentSnapshot['supplier']),
+                        Text('Updated date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}'),
+                      ],
+                    ),
                     trailing: SizedBox(
                       width: 100,
                       child: Row(
@@ -112,12 +132,23 @@ class _StocksScreenState extends State<StocksScreen> {
 
   /// Method to create or update stocks details
   Future<void> _createOrUpdate([DocumentSnapshot? documentSnapshot]) async {
+    // Clear the fields
+    _supplierNameController.text = '';
+    _quantityController.text = '';
+    product = '';
+    viewImg = '';
+    dropdownValue = 'Pasta';
+    selectedDate = DateTime.now();
     String action = 'create';
     if (documentSnapshot != null) {
       action = 'update';
       _supplierNameController.text = documentSnapshot['supplier'];
       _quantityController.text = documentSnapshot['quantity'].toString();
+      viewImg = documentSnapshot['product']['imgURL'];
+      dropdownValue = documentSnapshot['product']['name'];
       product = documentSnapshot['product'];
+     // selectedDate = documentSnapshot['date'];
+
     }
     await showModalBottomSheet(
         isScrollControlled: true,
@@ -134,6 +165,17 @@ class _StocksScreenState extends State<StocksScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Center(
+                  child:viewImg.isNotEmpty ? ClipRRect(
+                        borderRadius: BorderRadius.circular(40),
+                        child: Image.network(
+                          viewImg,
+                        ),
+                  ):
+                      Text('')
+                  ,
+                ),
+
                 TextField(
                   controller: _supplierNameController,
                   decoration: const InputDecoration(labelText: 'Supplier Name'),
@@ -145,7 +187,7 @@ class _StocksScreenState extends State<StocksScreen> {
                     List outputList =
                         list.where((o) => o['name'] == value).toList();
                     product = outputList[0];
-                  }),
+                  },selectedValue : dropdownValue),
                 ),
                 TextField(
                   keyboardType:
@@ -155,13 +197,44 @@ class _StocksScreenState extends State<StocksScreen> {
                     labelText: 'Quantity',
                   ),
                 ),
+                Container(
+                  margin: EdgeInsets.only(top: 16.0), // Margin for the container
+                  child: Center(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey[200], // Background color for the container
+                        borderRadius: BorderRadius.circular(10.0), // Rounded corners for the container
+                      ),
+                      padding: EdgeInsets.all(16.0), // Padding for the container
+                      child: Text(
+                        'Selected date: ${DateFormat('yyyy-MM-dd').format(selectedDate)}',
+                        style: TextStyle(
+                          fontSize: 16.0,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black,
+                          shadows: [
+                            Shadow(
+                              color: Colors.grey[300]!,
+                              offset: Offset(-1.0, -1.0),
+                              blurRadius: 2.0,
+                            ),
+                            Shadow(
+                              color: Colors.grey[300]!,
+                              offset: Offset(1.0, 1.0),
+                              blurRadius: 2.0,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
                 const SizedBox(
                   height: 20,
                 ),
                 ElevatedButton(
-                  child: Text(isUploading == true
-                      ? "Uploading"
-                      : action == 'create'
+                  child: Text(action == 'create'
                           ? 'Create'
                           : 'Update'),
                   onPressed: () async {
@@ -175,6 +248,7 @@ class _StocksScreenState extends State<StocksScreen> {
                           "supplier": suppliner,
                           "quantity": quantity,
                           "product": product,
+                          "date": selectedDate,
                           // "imgURL": uploadUrl
                         });
                       }
@@ -184,7 +258,7 @@ class _StocksScreenState extends State<StocksScreen> {
                         await _stocksData.doc(documentSnapshot!.id).update({
                           "supplier": suppliner,
                           "quantity": quantity,
-                          "product": product,
+                          "date": selectedDate,
                           // "imgURL": uploadUrl.isNotEmpty ? uploadUrl : viewImg
                         });
                       }
@@ -253,5 +327,3 @@ class _StocksScreenState extends State<StocksScreen> {
         const SnackBar(content: Text('You have successfully deleted a stock')));
   }
 }
-
-class DropdownSearch {}
