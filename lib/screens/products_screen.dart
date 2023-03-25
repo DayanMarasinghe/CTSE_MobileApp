@@ -19,8 +19,10 @@ class ProductsScreen extends StatefulWidget {
 }
 
 class _ProductsScreenState extends State<ProductsScreen> {
+  //referring the document and retrieving data from firebase
   final CollectionReference _productsData =
       FirebaseFirestore.instance.collection('products');
+  //flutter controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _priceController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
@@ -37,9 +39,11 @@ class _ProductsScreenState extends State<ProductsScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Products'),
+        backgroundColor: Colors.green,
       ),
       drawer: const NavDrawer(),
       // Using StreamBuilder to display all products from Firestore in real-time
+      //handling data from BE
       body: StreamBuilder(
         stream: _productsData.snapshots(),
         builder: (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
@@ -137,7 +141,8 @@ class _ProductsScreenState extends State<ProductsScreen> {
           .child('products/');
       await ref.putFile(_photo!);
       String downloadUrl = await ref.getDownloadURL();
-      this.uploadUrl = downloadUrl;
+      uploadUrl = downloadUrl;
+      // viewImg = downloadUrl;
       isUploading = false;
       print(downloadUrl);
     } catch (e) {
@@ -185,7 +190,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
                       _showPicker(context);
                     },
                     child: CircleAvatar(
-                      radius: 55,
+                      radius: 70,
                       backgroundColor: Color(0xffFDCF09),
                       child: viewImg.isEmpty
                           ? _photo != null
@@ -289,6 +294,7 @@ class _ProductsScreenState extends State<ProductsScreen> {
         });
   }
 
+  //delete function
   Future<void> _showMyDialog(documentSnapshot) async {
     return showDialog<void>(
       context: context,
@@ -331,26 +337,24 @@ class _ProductsScreenState extends State<ProductsScreen> {
         context: context,
         builder: (BuildContext bc) {
           return SafeArea(
-            child: Container(
-              child: new Wrap(
-                children: <Widget>[
-                  new ListTile(
-                      leading: new Icon(Icons.photo_library),
-                      title: new Text('Gallery'),
-                      onTap: () {
-                        imgFromGallery();
-                        Navigator.of(context).pop();
-                      }),
-                  new ListTile(
-                    leading: new Icon(Icons.photo_camera),
-                    title: new Text('Camera'),
+            child: Wrap(
+              children: <Widget>[
+                new ListTile(
+                    leading: new Icon(Icons.photo_library),
+                    title: new Text('Gallery'),
                     onTap: () {
-                      imgFromCamera();
+                      imgFromGallery();
                       Navigator.of(context).pop();
-                    },
-                  ),
-                ],
-              ),
+                    }),
+                new ListTile(
+                  leading: new Icon(Icons.photo_camera),
+                  title: new Text('Camera'),
+                  onTap: () {
+                    imgFromCamera();
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ],
             ),
           );
         });

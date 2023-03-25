@@ -4,20 +4,22 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 
 import '../core/widgets/NavDrawer.dart';
-
+//maintain data status through stateful
+//building the page
 class AdminScreen extends StatefulWidget {
   const AdminScreen({Key? key}) : super(key: key);
 
   @override
   State<AdminScreen> createState() => _AdminScreenState();
 }
-
+//manage state
 class _AdminScreenState extends State<AdminScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Admin'),
+        backgroundColor: Colors.green,
       ),
       drawer: const NavDrawer(),
       body: Padding(
@@ -30,8 +32,8 @@ class _AdminScreenState extends State<AdminScreen> {
                   Get.toNamed("/products")
                 },
                 child: Card(
-                    elevation: 4,
-                    color: Colors.white,
+                    elevation: 5,
+                    color: Colors.green,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
                     ),
@@ -39,7 +41,7 @@ class _AdminScreenState extends State<AdminScreen> {
                       width: 180,
                       height: 180,
                       child: Center(
-                          child: Text('Products', style: TextStyle(fontSize: 28))),
+                          child: Text('Products', style: TextStyle(fontSize: 28, color: Colors.white))),
                     )),
               ),
               GestureDetector(
